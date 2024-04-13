@@ -27,7 +27,7 @@ For using neoden3vAltium - read help topic first (-h or --help).
 2) change *FOOTPRINT.csv file for correct angle between lib and position in component tape
 3) change *PARTS.csv file for config groups component type - feeder - nozzle
 4) make Neoden3V compatible file using previous files using -cf and -feed flags
-5) use -flip flag while generating for flip coordinates on the bottom side
+4.1) use -flip flag while generating for flip coordinates on the bottom side
 
 ## Contributing
 This was derived from work done by Michael Moskie 2018--I merely altered it for CS pnpfiles and updated a couple of python 3 commands
