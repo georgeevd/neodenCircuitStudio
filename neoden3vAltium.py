@@ -162,7 +162,7 @@ class NeoDenConverter:
         output_file.close()
         return output_file.name
 
-    def create_parts_set(self):
+    def create_parts_set(self, print_result=False):
         for component in self.components:
             part = component.Footprint + '/' + component.Comment
             if not (part in self.parts_names):
@@ -173,6 +173,11 @@ class NeoDenConverter:
                     if part == p.part:
                         p.quantity += 1
                         break
+
+        self.parts = sorted(self.parts, key=lambda x: x.quantity, reverse=True)
+        if print_result:
+            for part in self.parts:
+                print("[%s] qnt = %i"%((part.Footprint + '\\' + part.Comment), part.quantity))
         print("parts:" + str(len(self.parts))+"\n")
 
     def create_parts_file(self):
@@ -338,9 +343,14 @@ def create_parser():
 argc = len(sys.argv)
 parser = create_parser()
 args = parser.parse_args(sys.argv[1:])
-print(args)
+#print(args)
 
 print("*****************")
+if args.print:
+    printFlag = True
+else:
+    printFlag = False
+
 
 converter = NeoDenConverter(args.FILE)
 no_output_generate_flag = False
@@ -350,7 +360,7 @@ if args.fp:
     print("template of footprints angle correction file is generated(" + frame + ")\n")
     no_output_generate_flag = True
 if args.cl:
-    converter.create_parts_set()
+    converter.create_parts_set(print_result=printFlag)
     converter.create_parts_file()
     no_output_generate_flag = True
 
@@ -393,7 +403,7 @@ converter.apply_machine_positions_2_components()
 if args.mix:
     converter.mix_nozzles()
 
-if args.print:
+if printFlag:
     print("----------------")
     for comp in converter.components:
         strout = "%s,\t, row: %f,\t corr %s,\t rot %f \t %s \t Nzl %s" % (comp.Designator, float(comp.RawRotation),
