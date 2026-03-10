@@ -155,20 +155,44 @@ class NeoDenConverter:
         return str_preamble
 
     def create_output_file(self, layer):
-        output_file = open(self.AltiumOutputFile.name.replace(".csv", "-NEODEN.csv"), "w")
 
-        output_file.write("# Mirror,First component X,First component Y,Rotation,Skip,\n" +
-                        "mirror, " + str(self.components[0].X) + ", " + str(self.components[0].Y) + ", " +
-                        str(self.components[0].Rotation) + ", No,\n\n")
-        output_file.write("#Chip,Feeder ID,Nozzle,Name,Value,Footprint,X,Y,Rotation,Skip\n")
+        buffer_top = []
+        buffer_bot = []
+
         for comp in self.components:
-            if not layer or comp.Layer == layer:
-                out_line = self.__feeder_n_nozzle_str__(comp) +\
-                           str(comp.Designator).replace("\"", "") + "," + \
-                           comp.Comment + "," + str(comp.Footprint).replace("\"", "") + "," + \
-                           str(round(Decimal(comp.X), 2)) + "," + str(round(Decimal(comp.Y), 2)) + "," + \
-                           (str(comp.Rotation).replace("\"", "")).replace("\n", "") + "," + comp.skip + ","
-                output_file.write(out_line + "\n")
+            out_line = (self.__feeder_n_nozzle_str__(comp) + \
+                       str(comp.Designator).replace("\"", "") + ", " + \
+                       comp.Comment + "," + str(comp.Footprint).replace("\"", "") + "," + \
+                       str(round(Decimal(comp.X), 2)) + "," + str(round(Decimal(comp.Y), 2)) + "," + \
+                       (str(comp.Rotation).replace("\"", "")).replace("\n", "") + \
+                        "," + comp.skip + ", \n")
+            if comp.Layer == "TopLayer":
+                buffer_top.append(out_line)
+            else:
+                buffer_bot.append(out_line)
+
+            if not layer or layer == "TopLayer":
+                output_file = open(self.AltiumOutputFile.name.replace(".csv", "-NEODEN_TOP.csv"), "w")
+                output_file.write("# Mirror,First component X,First component Y,Rotation,Skip,\n" +
+                                  "mirror, " + str(self.components[0].X) + ", " + str(self.components[0].Y) + ", " +
+                                  str(self.components[0].Rotation) + ", No,\n\n")
+                output_file.write("#Chip,Feeder ID,Nozzle,Name,Value,Footprint,X,Y,Rotation,Skip\n")
+                for line in buffer_top:
+                    output_file.write(line)
+                output_file.close()
+
+            if not layer or layer == "BottomLayer":
+                output_file = open(self.AltiumOutputFile.name.replace(".csv", "-NEODEN_BOT.csv"), "w")
+                output_file.write("# Mirror,First component X,First component Y,Rotation,Skip,\n" +
+                                  "mirror, " + str(self.components[0].X) + ", " + str(self.components[0].Y) + ", " +
+                                  str(self.components[0].Rotation) + ", No,\n\n")
+                output_file.write("#Chip,Feeder ID,Nozzle,Name,Value,Footprint,X,Y,Rotation,Skip\n")
+
+                for line in buffer_bot:
+                    output_file.write(line)
+                output_file.close()
+
+                #output_file.write(out_line + "\n")
 
     def create_footprints_file(self):
         output_file = open(self.AltiumOutputFile.name.replace(".csv", "-FOOTPRINTS.csv"), "w")
