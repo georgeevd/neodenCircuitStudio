@@ -8,6 +8,20 @@ import argparse
 import re
 
 
+def replace_commas_in_names(string):
+    result = []
+    quotes_open_flag = False
+    for char in string:
+        if char == '"':
+            quotes_open_flag = not quotes_open_flag
+        else:
+            if quotes_open_flag:
+                if char == ',':
+                    char = '.'
+            result.append(char)
+    return ''.join(result)
+
+
 class Columns:
     def __init__(self):
         self.designator_position = 0
@@ -24,8 +38,10 @@ class Columns:
 
 
 class Component:
+
     # just a structure to represent a physical component
     def __init__(self, line, columns):
+        line = replace_commas_in_names(line)
         # "Designator","Comment","Layer","Footprint","Center-X(mm)","Center-Y(mm)","Rotation","Description"
         self.Designator = line.split(',')[columns.designator_position]
         self.Footprint = (str(line.split(',')[columns.footprint_position]).replace("\"", ""))
@@ -181,7 +197,7 @@ class NeoDenConverter:
         print("parts:" + str(len(self.parts))+"\n")
 
     def create_parts_file(self):
-        output_file = open(self.AltiumOutputFile.name.replace(".csv", "-PARTS.csv"), "w")
+        output_file = open(self.AltiumOutputFile.name.replace(".csv", "-FEED.csv"), "w")
         output_file.write("#Use find-n-replace tool in text editor for config feeders, unconfigurated will marked as 'Skip:Yes'\n")
         output_file.write("#Part,Feeder,Nozzle,qnt,Field 4 your comment c\n")
         for part in self.parts:
@@ -339,11 +355,11 @@ def create_parser():
     arg_parser.add_argument('-feed', type=str, help=feed_help)
     return arg_parser
 
-
 argc = len(sys.argv)
 parser = create_parser()
 args = parser.parse_args(sys.argv[1:])
 #print(args)
+
 
 print("*****************")
 if args.print:
